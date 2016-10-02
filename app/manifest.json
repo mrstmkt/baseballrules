@@ -1,0 +1,12 @@
+{
+  "name": "公認野球規則",
+  "description": "公認野球規則（非公式）",
+  "version": "0.1",
+  "manifest_version": 2,
+  "app": {
+    "background": {
+      "scripts": ["background.js"]
+    }
+  },
+  "icons": { "16": "images/touch/icon-16x16.png", "128": "images/touch/icon-128x128.png" }
+}
