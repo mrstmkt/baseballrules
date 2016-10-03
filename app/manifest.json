@@ -1,7 +1,7 @@
 {
   "name": "公認野球規則",
   "description": "公認野球規則（非公式）",
-  "version": "0.1",
+  "version": "0.2",
   "manifest_version": 2,
   "app": {
     "background": {
