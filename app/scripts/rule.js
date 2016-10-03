@@ -422,8 +422,13 @@ function createAnchorText(text) {
         break;
       }
       
-      
       index = tmp.indexOf(found[0]);
+      
+      if(tmp.substr(index + found[0].length, 4) === "メートル") {
+        ret = ret + tmp.substring(0, index) + found[0];
+        p = p + index + found[0].length;
+        continue;      
+      }
       keys = [];
       if(found[2]  === '.00') {
         keys = keys.concat([found[1] + found[2]]);
