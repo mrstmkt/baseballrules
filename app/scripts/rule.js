@@ -56,13 +56,29 @@ function start() {
     }
   });
   
+  var keys = [];
+  var href = window.location.href;
+  var q = href.split('?');
+  if(q.length > 1) {
+    var query = q[1].split('=');
+    if(query.length > 1) {
+      keys = keyStrToKeys(decodeURI(query[1]));
+    }
+  }
   getData(function(data) {
     if(data.length > 0 && data[0].level === 0 && data[0].text.length > 0) {
       updateTitle(data[0].text);
     }
     
-    pushHeadingState(1, []);  
-    searchHeadingRule(1, []);
+    if(keys.length > 0) {
+      pushKeyState(keys);
+      searchRuleByKey(keys);
+      
+    }
+    else {
+      pushHeadingState(1, []);  
+      searchHeadingRule(1, []);
+    }
     
   });
 }
@@ -123,6 +139,16 @@ function keysToKeyStr(keys) {
     else {
       ret = ret + keys[i];
     }
+  }
+  return ret;
+}
+function keysToKeyStrForLink(keys) {
+  var ret = '';
+  for(var i = 0; i < keys.length; i++) {
+    if(ret.length !== 0) {
+      ret = ret + '-';
+    }
+    ret = ret + keys[i];
   }
   return ret;
 }
@@ -234,7 +260,11 @@ function updateRulePage(data) {
       $('#rules').append(p);
     }
   }  
-  
+  if(data.length > 0) {
+    var share = createShareArea(data[0].keys);
+    $('#rules').append(share);
+  }
+
   show('#rules');
 }
 function updateResult(resultObj) {
@@ -365,6 +395,48 @@ function createBreadCrumbs(keys) {
     p.append(a);
   }
   return div;
+}
+function createShareArea(keys) {
+  var div = $('<div class="share small"></div>');
+  if(window.location.href.substring(0, 4) == "http") {
+    div.append($('<span>リンクを共有:</span>'));
+    var text = '公認野球規則 ';
+    if(keys && keys.length > 0 && keys[0].match(/^\d+.00$/)) {
+      text = text + keys.slice(1, keys.length).join(' ');
+    }
+    else {
+      text = text + keys.join(' ');
+    }
+    var url = createLinkUrl(keys);
+    var twitter = $('<a>Twitter</a>');
+    if((encodeURIComponent(url) + text).length > 140) {
+      twitter.attr('href','http://twitter.com/intent/tweet?url=' + encodeURIComponent(url));
+    }
+    else {
+      twitter.attr('href','http://twitter.com/intent/tweet?url=' + encodeURIComponent(url) + '&text=' + encodeURIComponent(text));
+    }
+    div.append(twitter);
+    div.append($('<span> </span>'));
+    
+    var facebook = $('<a>facebook</a>');
+    facebook.attr('href','https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(url));
+    div.append(facebook);
+    div.append($('<span> </span>'));
+    
+    var gp = $('<a>google+</a>');
+    gp.attr('href','https://plus.google.com/share?url=' + encodeURIComponent(url));
+    div.append(gp);
+    div.append($('<span> </span>'));
+    
+    div.append($('<a target="_blank" href="' + url +'">'+ url + '</a>'));
+
+  }
+  return div;
+}
+function createLinkUrl(keys) {
+  var url = window.location.protocol + '//' +  window.location.host +
+    window.location.pathname + '?keys=' + keysToKeyStrForLink(keys);
+  return url;  
 }
 function createResult(key, word, headingData) {
   var keys = keyStrToKeys(key);
