@@ -43,3 +43,14 @@ html, body {
   display:none;
 }
 
+.searchBox {
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+.searchInputBox {
+  width: 85%;
+  max-width:300px;
+}
+.searchButton {
+  padding:0;
+}

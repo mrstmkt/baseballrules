@@ -1,3 +1,4 @@
+var searchTimeoutId = null;
 function start() {
   showLoading();
   
@@ -30,14 +31,29 @@ function start() {
   });
   $('#searchButton').click(function(e) {
     e.preventDefault();
-    
-    showLoading();
-    getData(function (data) {
-      var word = $('#searchWord').val();
-      var resultObj = searchKeysListByhWord(data, word, 100);
-      show('#search');
-      updateResult(resultObj);
-    }); 
+    var word = $('#searchWord').val();
+    if(word.length > 0) {
+      if(searchTimeoutId) {
+        clearTimeout(searchTimeoutId);
+        searchTimeoutId = null;
+      }
+      showLoading();
+      getData(function (data) {
+        var word = $('#searchWord').val();
+        var resultObj = searchKeysListByhWord(data, word, 100);
+        show('#search');
+        updateResult(resultObj);
+      }); 
+    }
+  });
+  
+  $('#searchWord').on('keydown', function(e) {
+    if ((e.which && e.which === 13) || (e.keyCode && e.keyCode === 13)) {
+      $('#searchButton').click();
+    } 
+    else {
+      delaySearch();
+    }
   });
   
   getData(function(data) {
@@ -50,7 +66,16 @@ function start() {
     
   });
 }
-
+function delaySearch() {
+  if(searchTimeoutId) {
+    clearTimeout(searchTimeoutId);
+    searchTimeoutId = null;
+  }
+  searchTimeoutId = setTimeout(function() {
+      searchTimeoutId = null;
+      $('#searchButton').click();
+  }, 2000);
+}
 function findData(data, checkFunc, num) {
   var ret = [];
   var n = 0;
