@@ -386,13 +386,37 @@ function createResult(key, word, headingData) {
 }
 function createText(text) {
   var ret = text;
-  ret = ret.replace(/^(\S*ペナルティ) /, '<b>$1</b>');
 
+  ret = ret.replace(/^(\S*ペナルティ) /, '<b>$1</b>');
   ret = createAnchorText(ret);
+
   var searchWord = $('#searchWord').val();
   if(searchWord.length > 0) {
-    ret = ret.replace(new RegExp(searchWord,'g'), '<span class="search-word">' + searchWord + '</span>');
+    ret = replaceTagWord(ret, new RegExp(searchWord,'g'), '<span class="search-word">' + searchWord + '</span>');
   }
+  return ret;
+}
+function replaceTagWord(contentsText, regExp, tagStr) {
+  var ret = '';
+  var tmp = $('<p></p>');
+  tmp.html(contentsText);
+  var contents = tmp.contents();
+  
+  var t;
+  for(var i = 0; i < contents.length; i++) {
+    if(contents[i].nodeType == 3) { //TextNode
+      t = contents[i].nodeValue;
+      t = t.replace(regExp, tagStr);
+      ret = ret + t;
+    }
+    else {
+      t = contents[i].innerHTML;
+      t = t.replace(regExp, tagStr);
+      contents[i].innerHTML = t;
+      ret = ret + contents[i].outerHTML;
+    }
+  }
+
   return ret;
 }
 function createKeyAnchor(keys,text) {
@@ -414,53 +438,65 @@ function createAnchorText(text) {
   var keys;
   while(p < text.length) {
     tmp = text.substring(p, text.length);
-    // found = tmp.match(/(\d+)(\.\d\d)\s*(([(]?([a-zA-Z]{1,2})[)]?\s*[(]?([0-9]{1,2})[)]?)|([(]?([a-zA-Z]{1,2})[)]?)){0,1}/);
-    found = tmp.match(/(\d+)(\.\d\d)\s*((([(]?[a-zA-Z]{1,2}[)]?)|([(]?[0-9]{1,2}[)]?))*)/);
+    // found = tmp.match(/(\d+)(\.\d\d)\s*((([(]?[a-zA-Z]{1,2}[)]?)|([(]?[0-9]{1,2}[)]?))*)/);
+    found = tmp.match(/((\d+)(\.\d\d)\s*((([(]?[a-zA-Z]{1,2}[)]?)|([(]?[0-9]{1,2}[)]?))*))|(定義(\d+))/);
     if(found) {
-      if(found[0].match(/^\d+\.\d\d\s*$/) 
-      && found[0] == text.substring(0, found[0].length)) {
-        break;
-      }
-      
-      index = tmp.indexOf(found[0]);
-      
-      if(tmp.substr(index + found[0].length, 4) === "メートル") {
-        ret = ret + tmp.substring(0, index) + found[0];
-        p = p + index + found[0].length;
-        continue;      
-      }
-      keys = [];
-      if(found[2]  === '.00') {
-        keys = keys.concat([found[1] + found[2]]);
-      }
-      else {
-        keys = keys.concat([
-          found[1] + '.00',
-          found[1] + found[2],
-        ]);
-      }
-      
-      if(found[3] && found[3].match(/([(][a-zA-Z0-9]{1,2}[)])+/)) {
-        var sp = found[3].split(/[() ]/);
-        for(var i = 0; i < sp.length; i++) {
-          if(sp[i] && sp[i].length > 0) {
-            keys.push('(' + sp[i] + ')');
+      if(found[1]) {
+        if(found[1].match(/^\d+\.\d\d\s*$/) 
+        && found[1] == text.substring(0, found[1].length)) {
+          break;
+        }
+        
+        index = tmp.indexOf(found[1]);
+        
+        if(tmp.substr(index + found[1].length, 4) === "メートル"
+        || tmp.substr(index + found[1].length, 3) === "インチ") {
+          ret = ret + tmp.substring(0, index) + found[1];
+          p = p + index + found[1].length;
+          continue;      
+        }
+        keys = [];
+        if(found[3]  === '.00') {
+          keys = keys.concat([found[2] + found[3]]);
+        }
+        else {
+          keys = keys.concat([
+            found[2] + '.00',
+            found[2] + found[3],
+          ]);
+        }
+        
+        if(found[4] && found[4].match(/([(][a-zA-Z0-9]{1,2}[)])+/)) {
+          var sp = found[4].split(/[() ]/);
+          for(var i = 0; i < sp.length; i++) {
+            if(sp[i] && sp[i].length > 0) {
+              keys.push('(' + sp[i] + ')');
+            }
           }
         }
-      }
-      else {
-        var f = found[3].match(/([a-zA-Z]{1,2})\s*([0-9]{1,2})*\s*([a-zA-Z]{1,2})*/);
-        if(f) {
-          if(f[1]) {
-            keys.push('('+ f[1] +')');
-          }
-          if(f[2]) {
-            keys.push('('+ f[2] +')');
-          }
-          if(f[3]) {
-            keys.push('('+ f[3] +')');
+        else {
+          var f = found[4].match(/([a-zA-Z]{1,2})\s*([0-9]{1,2})*\s*([a-zA-Z]{1,2})*/);
+          if(f) {
+            if(f[1]) {
+              keys.push('('+ f[1] +')');
+            }
+            if(f[2]) {
+              keys.push('('+ f[2] +')');
+            }
+            if(f[3]) {
+              keys.push('('+ f[3] +')');
+            }
           }
         }
+        
+      }
+      else {
+        index = tmp.indexOf(found[8]);
+        keys = [
+          "本規則における用語の定義",
+          found[9]
+          ];
+        
       }
       a = createKeyAnchor(keys, found[0]);
       ret = ret + tmp.substring(0, index) + a.get(0).outerHTML;

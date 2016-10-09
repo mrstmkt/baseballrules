@@ -1,5 +1,6 @@
 html, body {
     overflow-y: visible;
+  -webkit-user-select: text;
 }
 .rule-level1 {
   padding-left:0px;
