@@ -409,12 +409,7 @@ function createShareArea(keys) {
     }
     var url = createLinkUrl(keys);
     var twitter = $('<a>Twitter</a>');
-    if((encodeURIComponent(url) + text).length > 140) {
-      twitter.attr('href','http://twitter.com/intent/tweet?url=' + encodeURIComponent(url));
-    }
-    else {
-      twitter.attr('href','http://twitter.com/intent/tweet?url=' + encodeURIComponent(url) + '&text=' + encodeURIComponent(text));
-    }
+    twitter.attr('href','http://twitter.com/intent/tweet?url=' + encodeURIComponent(url) + '&text=' + encodeURIComponent(text));
     div.append(twitter);
     div.append($('<span> </span>'));
     
@@ -435,7 +430,7 @@ function createShareArea(keys) {
 }
 function createLinkUrl(keys) {
   var url = window.location.protocol + '//' +  window.location.host +
-    window.location.pathname + '?keys=' + keysToKeyStrForLink(keys);
+    window.location.pathname + '?keys=' + encodeURI(keysToKeyStrForLink(keys));
   return url;  
 }
 function createResult(key, word, headingData) {
